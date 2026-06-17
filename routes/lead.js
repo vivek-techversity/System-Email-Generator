@@ -28,8 +28,10 @@ router.post("/lead", upload.single("cv"), async (req, res) => {
   try {
     const { name, email, phone, country, programme, notes, source, website } = req.body || {};
 
-    // honeypot
-    if (website && website.trim() !== "") return res.status(200).json({ ok: true });
+    // honeypot — browser autofill ignore karo (jab hidden field me wahi value ho jo asli field me hai)
+    const hp = (website || "").trim();
+    const looksLikeAutofill = hp && (hp === (email || "").trim() || hp === (name || "").trim() || hp === (phone || "").trim());
+    if (hp && !looksLikeAutofill) return res.status(200).json({ ok: true });
 
     // validation
     const errors = {};
