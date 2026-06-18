@@ -28,6 +28,10 @@ const limiter = rateLimit({
 });
 
 app.get("/", (_req, res) => res.json({ ok: true, service: "techversity-backend" }));
+
+// ✅ NEW: Health check route - keeps Render server warm (pinged by UptimeRobot)
+app.get("/health", (_req, res) => res.json({ ok: true, timestamp: new Date().toISOString() }));
+
 app.use("/api", limiter, leadRouter);
 
 const PORT = process.env.PORT || 5000;

@@ -2,7 +2,7 @@
 import express from "express";
 import multer from "multer";
 import { appendLead, isDuplicate } from "../services/sheets.js";
-import { sendCourseEmail } from "../services/mailer.js";
+import { sendCourseEmail, sendFailureAlert } from "../services/mailer.js";
 import { uploadCV } from "../services/drive.js";
 
 const router = express.Router();
@@ -54,6 +54,7 @@ router.post("/lead", upload.single("cv"), async (req, res) => {
         message: "You've already applied for this programme. Our team will reach out soon.",
       });
     }
+    
 
     const lead = {
       name: name.trim(), email: cleanEmail, phone: phone.trim(),
@@ -70,7 +71,9 @@ router.post("/lead", upload.single("cv"), async (req, res) => {
     await appendLead(lead); 
 
     try { await sendCourseEmail(lead); }
-    catch (e) { console.error("Mail failed (lead still saved):", e?.message); }
+    catch (e) { console.error("Mail failed (lead still saved):", e?.message);
+       await sendFailureAlert(lead, e?.message || "Unknown error");
+     }
 
     return res.json({ ok: true });
   } catch (err) {
